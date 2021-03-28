@@ -3,34 +3,22 @@ import json
 import requests
 from config import GeckoConfig
 from typing import List, Tuple, Optional, Dict, Callable, Iterable, Union, Any
+from client.restclient import RestClient
 
 
-class GeckoClient:
+class GeckoClient(RestClient):
 
     def __init__(self, config=GeckoConfig):
-
-        self.url = config.BASE_URL
-        self._adapter = config.ADAPTER
-        self._retry_strategy = config.RETRY_STRATEGY
-
-        self.session = requests.Session()
-        self.session.mount('http://', self._adapter)
-
-    def _build_url(self, endpoint):
-        pass
-
-    def _make_request(self, url):
-        response = self.session.get(url)
-        if response.ok:
-            print(response.json())
-            return response.json()
-        else:
-            return None
+        super(GeckoClient, self).__init__(config)
 
     def ping(self):
-        return self._make_request(self.url + 'ping')
+        return self._request('GET', 'ping')
 
-    def get_price(self, ids: [str, list], vs_currencies: [str, list], **kwargs):
+    def get_price(self,
+                  ids: [str, list], vs_currencies: [str, list],
+                  include_market_cap=False, include_24hr_vol=False,
+                  include_24hr_change=False, include_last_updated_at=False, **kwargs
+                  ):
         """/simple/price
         Get the current price of any cryptocurrencies in any other supported currencies that you need.
 
@@ -47,11 +35,12 @@ class GeckoClient:
             * include_last_updated_at (string) [optional] - true/false to include last_updated_at of price, default: false
 
         """
+        payload = self._build_payload(locals(),**kwargs)
+        return self._request('GET', 'simple/price', payload=payload)
 
-        return self._make_request(self.url + f'simple/price?ids={ids}&vs_currencies={vs_currencies}')
 
 
 
 gecko = GeckoClient()
-gecko.get_price('0x','eth')
+gecko.get_price('bitcoin','eth')
 
