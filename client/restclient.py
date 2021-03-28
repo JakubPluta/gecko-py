@@ -28,17 +28,16 @@ class RestClient:
     def _build_endpoint_url(self, url):
         return f"{self._url}{url}"
 
-    def _build_payload(self, params, **kwargs):
+    def _build_payload(self, params):
         try:
             del params["self"]
         except Exception as e:
             logger.info(e)
-        payload = {**params, **kwargs} if kwargs else params
-        return payload
+        return params
 
-    def _request(self, method: str, url: str, payload=None):
+    def _request(self, method: str, url: str, params: dict = None):
         endpoint_url = self._build_endpoint_url(url)
-        response = self.session.request(method, endpoint_url, params=payload)
+        response = self.session.request(method, endpoint_url, params=params)
 
         try:
             response.raise_for_status()
