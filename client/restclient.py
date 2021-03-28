@@ -4,11 +4,11 @@ from requests.exceptions import HTTPError
 from client import logger
 from client.exceptions import RestClientError
 
-ALLOWED_METHODS = ['GET','POST','PUT','DELETE']
+ALLOWED_METHODS = ["GET", "POST", "PUT", "DELETE"]
 HEADERS = {}
 
-class RestClient:
 
+class RestClient:
     def __init__(self, config: Config):
 
         self._url = config.BASE_URL
@@ -20,7 +20,7 @@ class RestClient:
         else:
             self.session = requests
 
-        self.session.mount('http://', self._adapter)
+        self.session.mount("http://", self._adapter)
 
     def __repr__(self):
         return f'<RestClient(url="{self._url}")>'
@@ -28,12 +28,15 @@ class RestClient:
     def _build_endpoint_url(self, url):
         return f"{self._url}{url}"
 
-    def _build_payload(self, params,  **kwargs):
-        del params['self']
+    def _build_payload(self, params, **kwargs):
+        try:
+            del params["self"]
+        except Exception as e:
+            logger.info(e)
         payload = {**params, **kwargs} if kwargs else params
         return payload
 
-    def _request(self, method: str, url: str, payload=dict):
+    def _request(self, method: str, url: str, payload=None):
         endpoint_url = self._build_endpoint_url(url)
         response = self.session.request(method, endpoint_url, params=payload)
 
